@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+}
+
+.menu {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  flex-direction: column;
+}
+
+#playground {
+  flex: 1;
+}
+.header {
+  font-weight: bold;
+}
+
+.menu .inputs {
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+}
+.menu .heading {
+  display: flex;
+  justify-content: center;
+}
+
+.menu .inputs .start {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu .inputs .end {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

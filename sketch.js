@@ -2,11 +2,13 @@ var cols = 20;
 var rows = 20;
 var grid = new Array(cols);
 
+var temp_i, temp_j;
 var startXValue = 0;
 var startYValue = 0;
 var endXValue = 0;
 var endYValue = 0;
-var y, x = 0;
+var y,
+  x = 0;
 var openSet = [];
 var closedSet = [];
 var w;
@@ -15,15 +17,15 @@ var start;
 var end;
 var path = [];
 var forkliftMoveList = [];
-var drawing = true;
+var calculatingRoad = true;
 var Forklift;
-var endRoad = false;
-
+var creatingMoveList = false;
+var animateMove = false;
 
 function removeFromArray(array, item) {
   for (var i = array.length - 1; i >= 0; i--) {
     if (array[i] == item) {
-      array.splice(i, 1)
+      array.splice(i, 1);
     }
   }
 }
@@ -41,7 +43,7 @@ function getValueEndY() {
 function heuristic(a, b) {
   // var d = dist(a.i, a.j, b.i, b.j);
 
-  var d = abs(a.i - b.i) + abs(a.j - b.j)
+  var d = abs(a.i - b.i) + abs(a.j - b.j);
 
   return d;
 }
@@ -54,10 +56,9 @@ function initWalls() {
       }
     }
   }
-
 }
 
-function clearFGH(){
+function clearFGH() {
   for (var i = 0; i < cols; i++) {
     for (var j = 0; j < rows; j++) {
       grid[i][j].f = 0;
@@ -70,51 +71,52 @@ function clearFGH(){
 function aStar(oldStart, endX, endY) {
   start = grid[oldStart.i][oldStart.j];
   end = grid[endX][endY];
+  temp_i = Forklift.i;
+  temp_j = Forklift.j;
   openSet = [];
   closedSet = [];
   openSet.push(start);
-  drawing = true;
-  endRoad = false;
+  calculatingRoad = true;
+  creatingMoveList = false;
 }
 
 function moveDown() {
   Forklift.j += 1;
 }
 
-function moveUp(){
+function moveUp() {
   Forklift.j -= 1;
 }
-
 
 function moveRight() {
   Forklift.i += 1;
 }
 
-function moveLeft(){
+function moveLeft() {
   Forklift.i -= 1;
 }
 
-function turn(){
-  Forklift.show(color(255,255,0))
+function turn() {
+  Forklift.show(color(255, 255, 0));
 }
 
 function Forklift(i, j) {
-  path=[]
+  path = [];
 
-  this.i = i
-  this.j = j
-  this.direction = 's';
+  this.i = i;
+  this.j = j;
+  this.direction = "s";
 
-  this.show = function(color){
-    fill(color)
-    noStroke(0)
-    rect(this.i * w, this.j * h, w - 1, h - 1)
-  }
+  this.show = function(color) {
+    fill(color);
+    noStroke(0);
+    rect(this.i * w, this.j * h, w - 1, h - 1);
+  };
 
-  this.turn = function(){
-    fill(color(255, 255, 0))
-  }
-} 
+  this.turn = function() {
+    fill(color(255, 255, 0));
+  };
+}
 
 function Spot(i, j) {
   this.i = i;
@@ -126,7 +128,6 @@ function Spot(i, j) {
   this.cameFrom = undefined;
   this.wall = false;
 
-
   this.show = function(color) {
     fill(color);
     noStroke(0);
@@ -136,7 +137,7 @@ function Spot(i, j) {
     }
 
     rect(this.i * w, this.j * h, w - 1, h - 1);
-  }
+  };
   this.addNeighbours = function(grid) {
     var i = this.i;
     var j = this.j;
@@ -172,7 +173,7 @@ function Spot(i, j) {
     // if (i > 0 && j > 0) {
     //   this.neighbours.push(grid[i - 1][j - 1]);
     // }
-  }
+  };
 }
 
 function clearCameFrom() {
@@ -183,24 +184,24 @@ function clearCameFrom() {
   }
 }
 
-function setup() {  
-  var endX = createInput('0');
+function setup() {
+  var endX = createInput("0");
   endX.input(getValueEndX);
 
-  var endY = createInput('0');
+  var endY = createInput("0");
   endY.input(getValueEndY);
 
-  var launcher = createButton('Launch')
+  var launcher = createButton("Launch");
   launcher.mousePressed(() => aStar(end, endXValue, endYValue));
 
   // var playground = createCanvas(600, 600);
   // playground.parent('playground')
-  
+
   createCanvas(600, 600);
   w = width / cols;
   h = height / rows;
-  
-  console.log('A*');
+
+  console.log("A*");
 
   for (var i = 0; i < cols; i++) {
     grid[i] = new Array(cols);
@@ -226,20 +227,15 @@ function setup() {
   start.wall = false;
   end.wall = false;
   openSet.push(start);
-  drawing = true;
-  Forklift = new Forklift(start.i, start.j)
+  calculatingRoad = true;
+  Forklift = new Forklift(start.i, start.j);
   aStar(start, 0, 0);
-  
-  
 }
 
-
-
 function draw() {
-
   x++;
 
-  if (drawing) {
+  if (calculatingRoad) {
     if (openSet.length > 0) {
       var winner = 0;
 
@@ -250,9 +246,9 @@ function draw() {
       }
       var current = openSet[winner];
 
-
       if (current == end) {
-        drawing = false;
+        calculatingRoad = false;
+        creatingMoveList = true;
         console.log("Searching finished");
         console.log(path);
       }
@@ -265,8 +261,8 @@ function draw() {
 
         if (!closedSet.includes(neighbour) && !neighbour.wall) {
           var tempG = current.g + heuristic(neighbour, current);
-          
-          var newPath = false
+
+          var newPath = false;
           if (openSet.includes(neighbour)) {
             if (tempG < neighbour.g) {
               neighbour.g = tempG;
@@ -288,19 +284,19 @@ function draw() {
       }
     } else {
       console.log("no solution");
-      drawing = false;
+      calculatingRoad = false;
+      creatingMoveList = true;
     }
     background(0);
-    path = []
-    path.push(end)
+    path = [];
+    path.push(end);
     var temp = current;
     path.push[temp];
     while (temp.cameFrom) {
       path.push(temp.cameFrom);
-      temp = temp.cameFrom;  
+      temp = temp.cameFrom;
     }
     // console.log(path);
-    
   }
 
   for (var i = 0; i < cols; i++) {
@@ -309,54 +305,65 @@ function draw() {
     }
   }
 
-  Forklift.show(color(44, 82, 142))
+  Forklift.show(color(44, 82, 142));
 
   {
-  // end.show(color(255,0,0))
-  //   for (var i = 0; i < closedSet.length; i++) {
-  //     closedSet[i].show(color(255,0,0));
-  //   }
-
-
-  //   for (var i = 0; i < openSet.length; i++) {
-  //     openSet[i].show(color(0,255,0));
-  //   }}}
+    // end.show(color(255,0,0))
+    //   for (var i = 0; i < closedSet.length; i++) {
+    //     closedSet[i].show(color(255,0,0));
+    //   }
+    //   for (var i = 0; i < openSet.length; i++) {
+    //     openSet[i].show(color(0,255,0));
+    //   }}}
   }
-  
-  if (!drawing && !endRoad) {
-    clearCameFrom()
-    if(Forklift.i !== path[path.length-1].i){
-      if (Forklift.i > path[path.length-1].i) {
-        moveLeft()
+
+  if (creatingMoveList) {
+    clearCameFrom();
+    if (temp_i !== path[path.length - 1].i) {
+      if (temp_i > path[path.length - 1].i) {
+        forkliftMoveList.push(moveLeft);
       }
 
-      if (Forklift.i < path[path.length-1].i) {
-        moveRight()
+      if (temp_i < path[path.length - 1].i) {
+        forkliftMoveList.push(moveRight);
       }
-      // Forklift.i = path[path.length-1].i
-    } 
-
-    if(Forklift.j !== path[path.length-1].j) {
-      if (Forklift.j > path[path.length-1].j) {
-        moveUp()
-      }
-
-      if (Forklift.j < path[path.length-1].j) {
-        moveDown()
-      }
-      Forklift.j = path[path.length-1].j
+      temp_i = path[path.length - 1].i;
     }
-    
-    if(x % 20 === 0){
-      path.pop()
-      
+
+    if (temp_j !== path[path.length - 1].j) {
+      if (temp_j > path[path.length - 1].j) {
+        forkliftMoveList.push(moveUp);
+      }
+
+      if (temp_j < path[path.length - 1].j) {
+        forkliftMoveList.push(moveDown);
+      }
+
+      temp_j = path[path.length - 1].j;
     }
-    if(path.length === 0){
+
+    // if (x % 20 === 0) {
+    path.pop();
+    // }
+    if (path.length === 0) {
       console.log("Postion of fork at the end", Forklift.i, Forklift.j);
-      endRoad = true;
+      creatingMoveList = false;
+      animateMove = true;
+      console.log(forkliftMoveList);
+
       // clearFGH()
     }
-    end.show(color(255,0,0)) 
+    end.show(color(255, 0, 0));
   }
-  
+
+  if (animateMove) {
+    if (forkliftMoveList.length > 0) {
+      if (x % 40 === 0) {
+        forkliftMoveList[0]();
+        forkliftMoveList.splice(0, 1);
+      }
+    } else {
+      animateMove = false;
+    }
+  }
 }

@@ -1,27 +1,94 @@
+// Siec semantyczna
+var magazineNetwork = new Semnet();
+
+// Kategorie
+magazineNetwork.add("TV");
+magazineNetwork.add("Food");
+magazineNetwork.add("PC parts");
+magazineNetwork.add("Clothes");
+magazineNetwork.add("Containers");
+magazineNetwork.add("Furniture");
+
+// Atrybuty
+magazineNetwork.add("big", { opposite: "small", transitive: true });
+magazineNetwork.add("medium");
+magazineNetwork.add("colorfull", { opposite: "uncolorful", transitive: true });
+
+// Fakty
+magazineNetwork.fact("TV", "is", "big");
+magazineNetwork.fact("Containers", "is", "big");
+magazineNetwork.fact("Furniture", "is", "big");
+magazineNetwork.fact("Clothes", "is", "medium");
+magazineNetwork.fact("TV", "is", "big");
+magazineNetwork.fact("Food", "is", "small");
+
+var smallObjects = magazineNetwork
+  .q()
+  .filter("is", "small")
+  .all();
+var bigObjects = magazineNetwork
+  .q()
+  .filter("is", "big")
+  .all();
+
+console.log(smallObjects);
+console.log(bigObjects);
+
+// Inicjalizacja srodowiska
+
+// Ilosc kolumn
 var cols = 20;
+
+// Ilosc wierszy
+
 var rows = 20;
+
+// Tworzenie siatki (mapy)
 var grid = new Array(cols);
 
 var temp_i, temp_j;
+
+// Poczatkowe wartosci
+// Pozcyja wozka
 var startXValue = 0;
 var startYValue = 0;
+
+// Miejsce docelowe
 var endXValue = 0;
 var endYValue = 0;
+var shelfName = "";
+
 var y,
   x = 0;
+
+// Mozliwe drogi
 var openSet = [];
+
+// Przejrzane drogi
 var closedSet = [];
 var w;
 var h;
 var start;
 var end;
+var shelfs = {};
+// Sciezka
 var path = [];
+
+// Lista ruchow wozka
 var forkliftMoveList = [];
-var calculatingRoad = true;
+
+// Wozek
 var Forklift;
+
+// Miejsce odbioru paczek
+
+var PickupSpot;
+// Zmienne pomagajace wykonywac konkretne czynnosci
+var calculatingRoad = true;
 var creatingMoveList = false;
 var animateMove = false;
 
+// Funkcja pomocnicza usuwajaca objekt z tablicy
 function removeFromArray(array, item) {
   for (var i = array.length - 1; i >= 0; i--) {
     if (array[i] == item) {
@@ -30,6 +97,7 @@ function removeFromArray(array, item) {
   }
 }
 
+// Pobieranie wartosci do kierowania wozkiem
 function getValueEndX() {
   endXValue = this.value();
   console.log(endXValue);
@@ -40,6 +108,11 @@ function getValueEndY() {
   console.log(endYValue);
 }
 
+function getShefName() {
+  shelfName = this.value();
+  console.log(shelfName);
+}
+// Heurestyka, w tym przypadku odleglosc Manhattan
 function heuristic(a, b) {
   // var d = dist(a.i, a.j, b.i, b.j);
 
@@ -48,26 +121,199 @@ function heuristic(a, b) {
   return d;
 }
 
+function getShelfInfo() {
+  shelfs = {
+    S10: {
+      cord: [2, 2],
+      entrance: grid[2][2].entrance
+    },
+    S11: {
+      cord: [3, 2],
+      entrance: grid[3][2].entrance
+    },
+    S12: {
+      cord: [4, 2],
+      entrance: grid[4][2].entrance
+    },
+    S13: {
+      cord: [5, 2],
+      entrance: grid[5][2].entrance
+    },
+    S14: {
+      cord: [6, 2],
+      entrance: grid[6][2].entrance
+    },
+    S20: {
+      cord: [2, 4],
+      entrance: grid[2][4].entrance
+    },
+    S21: {
+      cord: [3, 4],
+      entrance: grid[3][4].entrance
+    },
+    S22: {
+      cord: [4, 4],
+      entrance: grid[4][4].entrance
+    },
+    S23: {
+      cord: [5, 4],
+      entrance: grid[5][4].entrance
+    },
+    S24: {
+      cord: [6, 4],
+      entrance: grid[6][4].entrance
+    },
+    S30: {
+      cord: [2, 6],
+      entrance: grid[2][6].entrance
+    },
+    S31: {
+      cord: [3, 6],
+      entrance: grid[3][6].entrance
+    },
+    S32: {
+      cord: [4, 6],
+      entrance: grid[4][6].entrance
+    },
+    S33: {
+      cord: [5, 6],
+      entrance: grid[5][6].entrance
+    },
+    S34: {
+      cord: [6, 6],
+      entrance: grid[6][6].entrance
+    },
+    S40: {
+      cord: [13, 13],
+      entrance: grid[13][13].entrance
+    },
+    S41: {
+      cord: [14, 13],
+      entrance: grid[14][13].entrance
+    },
+    S42: {
+      cord: [15, 13],
+      entrance: grid[15][13].entrance
+    },
+    S43: {
+      cord: [16, 13],
+      entrance: grid[16][13].entrance
+    },
+    S44: {
+      cord: [17, 13],
+      entrance: grid[17][13].entrance
+    },
+    S50: {
+      cord: [13, 15],
+      entrance: grid[13][15].entrance
+    },
+    S51: {
+      cord: [14, 15],
+      entrance: grid[14][15].entrance
+    },
+    S52: {
+      cord: [15, 15],
+      entrance: grid[15][15].entrance
+    },
+    S53: {
+      cord: [16, 15],
+      entrance: grid[16][15].entrance
+    },
+    S54: {
+      cord: [17, 15],
+      entrance: grid[17][15].entrance
+    },
+    S60: {
+      cord: [13, 17],
+      entrance: grid[13][17].entrance
+    },
+    S61: {
+      cord: [14, 17],
+      entrance: grid[14][17].entrance
+    },
+    S62: {
+      cord: [15, 17],
+      entrance: grid[15][17].entrance
+    },
+    S63: {
+      cord: [16, 17],
+      entrance: grid[16][17].entrance
+    },
+    S64: {
+      cord: [17, 17],
+      entrance: grid[17][17].entrance
+    }
+  };
+}
+// Tworzenie scian
 function initWalls() {
   for (var i = 0; i < cols; i++) {
     for (var j = 0; j < rows; j++) {
       if (random(1) < 0.3) {
-        grid[i][j].wall = true;
+        grid[i][j].shelf = true;
       }
     }
   }
 }
 
-function initPenalties() {
+function initMap() {
+  // Sciany i pola ze zwiekszona waga
   for (var i = 0; i < cols; i++) {
     for (var j = 0; j < rows; j++) {
-      if (random(1) < 0.8) {
-        grid[i][j].penalty = Math.round(random(1, 3));
+      if (i == 0) {
+        grid[i][j].wall = true;
+      }
+
+      if (j == 0) {
+        grid[i][j].wall = true;
+      }
+
+      if (i == 19) {
+        grid[i][j].wall = true;
+      }
+
+      if (j == 19) {
+        grid[i][j].wall = true;
+      }
+
+      if (random(1) < 0.1) {
+        grid[i][j].penalty = Math.round(random(1, 2)) * 5;
       }
     }
   }
+
+  // Tworzenie pulek
+
+  for (var i = 0; i < 5; i++) {
+    grid[2 + i][2].shelf = true;
+    grid[2 + i][2].entrance = "n";
+    grid[2 + i][2].shelfName = "S1" + i;
+
+    grid[2 + i][4].shelf = true;
+    grid[2 + i][4].entrance = "s";
+    grid[2 + i][4].shelfName = "S2" + i;
+
+    grid[2 + i][6].shelf = true;
+    grid[2 + i][6].entrance = "s";
+    grid[2 + i][6].shelfName = "S3" + i;
+
+    grid[13 + i][13].shelf = true;
+    grid[13 + i][13].entrance = "n";
+    grid[13 + i][13].shelfName = "S4" + i;
+
+    grid[13 + i][15].shelf = true;
+    grid[13 + i][15].entrance = "s";
+    grid[13 + i][15].shelfName = "S5" + i;
+
+    grid[13 + i][17].shelf = true;
+    grid[13 + i][17].entrance = "s";
+    grid[13 + i][15].shelfName = "S6" + i;
+  }
+
+  getShelfInfo();
 }
 
+// Czyszczenie wartosci pol
 function clearFGH() {
   for (var i = 0; i < cols; i++) {
     for (var j = 0; j < rows; j++) {
@@ -78,18 +324,36 @@ function clearFGH() {
   }
 }
 
-function aStar(oldStart, endX, endY) {
-  start = grid[oldStart.i][oldStart.j];
-  end = grid[endX][endY];
-  temp_i = Forklift.i;
-  temp_j = Forklift.j;
-  openSet = [];
-  closedSet = [];
-  openSet.push(start);
-  calculatingRoad = true;
-  creatingMoveList = false;
+// Funkcja uruchaniajaca wozek (obliczanie drogi i animacja)
+function aStar(endX, endY, shelf) {
+  console.log(shelf);
+
+  console.log(shelfs[shelf]);
+  if (shelfs[shelf]) {
+    var destinationShelf = shelfs[shelf];
+
+    if (destinationShelf.entrance == "n") {
+      end = grid[destinationShelf.cord[0]][destinationShelf.cord[1] - 1];
+    }
+
+    if (destinationShelf.entrance == "s") {
+      end = grid[destinationShelf.cord[0]][destinationShelf.cord[1] + 1];
+    }
+
+    start = grid[Forklift.i][Forklift.j];
+    temp_i = Forklift.i;
+    temp_j = Forklift.j;
+    openSet = [];
+    closedSet = [];
+    openSet.push(start);
+    calculatingRoad = true;
+    creatingMoveList = false;
+  } else {
+    alert("Shelf dosent exist");
+  }
 }
 
+// Ruchy wozka
 function moveDown() {
   Forklift.j += 1;
 }
@@ -110,6 +374,7 @@ function turn() {
   Forklift.show(color(255, 255, 0));
 }
 
+// Wozek
 function Forklift(i, j) {
   path = [];
 
@@ -128,42 +393,85 @@ function Forklift(i, j) {
   };
 }
 
-function Spot(i, j) {
+// Pole na mapie z parametrami ::
+function PickupSpot(i, j) {
   this.i = i;
   this.j = j;
+
+  this.show = function() {
+    fill(91, 58, 0);
+
+    rect(this.i * w, this.j * h, w - 1, h - 1);
+  };
+}
+
+function Spot(i, j) {
+  // lokalizcaja
+  this.i = i;
+  this.j = j;
+
+  // wartosci f, g i h
   this.f = 0;
   this.g = 0;
   this.h = 0;
+
+  // sasiedzi pola
   this.neighbours = [];
+
+  // informacja o poprzedniku
   this.cameFrom = undefined;
+
+  // informacja czy to pole jest sciana
   this.wall = false;
+
+  //
+  this.shelf = false;
+  this.shelfName = null;
+  this.type = null; // zywnosc, agd,
+  this.atribute = null; // lekki, sredni, ciezki
+  this.entrance = null;
+  this.objects = [];
+
+  // waga pola
   this.penalty = 0;
 
+  // funkcja nadajaca wyglad polu
   this.show = function(color) {
     fill(color);
     noStroke(0);
 
     switch (this.penalty) {
-      case 1:
-        fill(107, 255, 91);
+      // pole wagi 1, kolor zielony
+      case 5:
+        fill(210, 255, 76);
         break;
-      case 2:
-        fill(91, 241, 255);
+
+      // pole wagi 2, kolor niebieski
+      case 10:
+        fill(50, 52, 56);
         break;
-      case 3:
-        fill(255, 91, 91);
-        break;
+
+      // pole wagi 3, kolor czerwony
+      // case 3:
+      //   fill(255, 91, 91);
+      //   break;
       default:
         break;
     }
 
+    // rysowanie sciany
     if (this.wall) {
       fill(0);
     }
 
+    if (this.shelf) {
+      fill(136, 137, 136);
+    }
+    // tworzenie pola jako kwadratu w miejscu i (x),  j (y) w raz z jego wielkoscia
     rect(this.i * w, this.j * h, w - 1, h - 1);
   };
 
+  // funkcja dodajaca sasiada do pola, jako, ze wozek porusza sie tylko w 4 kierunkach kazde pole moze miec maksymalnie 4 sasiadow
   this.addNeighbours = function(grid) {
     var i = this.i;
     var j = this.j;
@@ -184,24 +492,25 @@ function Spot(i, j) {
       this.neighbours.push(grid[i][j - 1]);
     }
 
-    // if (i < cols - 1 && j > 0) {
-    //   this.neighbours.push(grid[i + 1][j - 1]);
-    // }
-
-    // if (i > 0 && j < rows - 1) {
-    //   this.neighbours.push(grid[i - 1][j + 1]);
-    // }
-
-    // if (i < cols - 1 && j < rows - 1) {
-    //   this.neighbours.push(grid[i + 1][j + 1]);
-    // }
-
-    // if (i > 0 && j > 0) {
-    //   this.neighbours.push(grid[i - 1][j - 1]);
-    // }
+    {
+      // Pozostalosc po skosach, nie implementowana
+      // if (i < cols - 1 && j > 0) {
+      //   this.neighbours.push(grid[i + 1][j - 1]);
+      // }
+      // if (i > 0 && j < rows - 1) {
+      //   this.neighbours.push(grid[i - 1][j + 1]);
+      // }
+      // if (i < cols - 1 && j < rows - 1) {
+      //   this.neighbours.push(grid[i + 1][j + 1]);
+      // }
+      // if (i > 0 && j > 0) {
+      //   this.neighbours.push(grid[i - 1][j - 1]);
+      // }}
+    }
   };
 }
 
+// Czyszczenie informacji o poprzednikach z poprzedniego przeszukiwania
 function clearCameFrom() {
   for (var i = 0; i < cols; i++) {
     for (var j = 0; j < rows; j++) {
@@ -210,57 +519,94 @@ function clearCameFrom() {
   }
 }
 
+// Inicjalizacja aplikacji
 function setup() {
+  // Inputy do sterowania wozkiem
   var endX = createInput("0");
   endX.input(getValueEndX);
 
   var endY = createInput("0");
   endY.input(getValueEndY);
 
+  var shelfNameInput = createInput("Input shelfname");
+  shelfNameInput.input(getShefName);
+
   var launcher = createButton("Launch");
-  launcher.mousePressed(() => aStar(end, endXValue, endYValue));
+  launcher.mousePressed(() => aStar(endXValue, endYValue, shelfName));
 
   // var playground = createCanvas(600, 600);
   // playground.parent('playground')
 
+  // Tworzenie swiata
   createCanvas(600, 600);
+
+  // Szerokosc i wysokosc kazdego pola wyliczania na podstawie ilosc wierszy i kolumn
   w = width / cols;
   h = height / rows;
 
   console.log("A*");
 
+  // Inicjalizacja Mapy
   for (var i = 0; i < cols; i++) {
     grid[i] = new Array(cols);
   }
 
+  // Tworzenie kazdego pola z pustymi parametrami bazowymi
   for (var i = 0; i < cols; i++) {
     for (var j = 0; j < rows; j++) {
       grid[i][j] = new Spot(i, j);
     }
   }
 
+  // Ustalenie wszystkich sasiadow
   for (var i = 0; i < cols; i++) {
     for (var j = 0; j < rows; j++) {
       grid[i][j].addNeighbours(grid);
     }
   }
 
-  initWalls();
-  initPenalties();
-  start = grid[0][0];
-  end = grid[0][0];
+  // Dodanie scian do mapy
+  // initWalls();
+
+  // Nadanie polom wag
+  // initPenalties();
+
+  // Tworzenie mapy
+  initMap();
+  // Miejsce startu, dmyslnie 0,0
+  start = grid[1][1];
+
+  // Koniec w tym samym miejscu
+  end = grid[1][1];
+
+  // Inicjalizacja sciezki
   path = [];
+
+  // Upewnienie sie, ze poczatek ani koniec nie jest sciana
   start.wall = false;
   end.wall = false;
+
+  // Dodanie pierwszego mozliwego pola do przeszukiwan
   openSet.push(start);
+
+  // Rozpoczecie przeszukiwania
   calculatingRoad = true;
+
+  // Dodanie wozka do mapy
   Forklift = new Forklift(start.i, start.j);
-  aStar(start, 0, 0);
+  PickupSpot = new PickupSpot(19, 10);
+  grid[19][10].wall = false;
+  console.log(grid);
+  console.log(shelfs);
+
+  // aStar(1, 1);
 }
 
+// Petla w ktorej sa wykonywane wszystkie operacje
 function draw() {
   x++;
 
+  // Obliczanie drogi
   if (calculatingRoad) {
     if (openSet.length > 0) {
       var winner = 0;
@@ -285,7 +631,11 @@ function draw() {
       for (var i = 0; i < neighbours.length; i++) {
         var neighbour = neighbours[i];
 
-        if (!closedSet.includes(neighbour) && !neighbour.wall) {
+        if (
+          !closedSet.includes(neighbour) &&
+          !neighbour.wall &&
+          !neighbour.shelf
+        ) {
           var tempG =
             current.g + heuristic(neighbour, current) + neighbour.penalty;
 
@@ -315,6 +665,8 @@ function draw() {
       creatingMoveList = true;
     }
     background(0);
+
+    // Tworzenie wlasciwej sciezki dzialac wstecz
     path = [];
     path.push(end);
     var temp = current;
@@ -323,8 +675,6 @@ function draw() {
       path.push(temp.cameFrom);
       temp = temp.cameFrom;
     }
-
-    console.log(path);
   }
 
   for (var i = 0; i < cols; i++) {
@@ -343,6 +693,7 @@ function draw() {
     //   }}}
   }
 
+  // Tworzenie listy ruchow na podstawie ustalonej sciezki
   if (creatingMoveList) {
     clearCameFrom();
     // Tworzenie sciezki w formie listy ruchow wraz z obrotami w miejscu
@@ -422,6 +773,7 @@ function draw() {
 
   Forklift.show(color(44, 82, 142));
 
+  // Animacja poruszania sie wozka
   if (animateMove) {
     if (forkliftMoveList.length > 0) {
       if (x % 40 === 0) {
@@ -430,7 +782,17 @@ function draw() {
       }
     } else {
       clearFGH();
+      if (shelfs[shelfName]) {
+        while (Forklift.direction !== shelfs[shelfName].entrance) {
+          console.log("Nizgodny kierunek wozka z wjazdem");
+          console.log(Forklift.direction, shelfs[shelfName].entrance);
+
+          turn();
+        }
+      }
+
       animateMove = false;
     }
   }
+  PickupSpot.show();
 }

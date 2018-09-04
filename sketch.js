@@ -58,6 +58,16 @@ function initWalls() {
   }
 }
 
+function initPenalties() {
+  for (var i = 0; i < cols; i++) {
+    for (var j = 0; j < rows; j++) {
+      if (random(1) < 0.8) {
+        grid[i][j].penalty = Math.round(random(1, 3));
+      }
+    }
+  }
+}
+
 function clearFGH() {
   for (var i = 0; i < cols; i++) {
     for (var j = 0; j < rows; j++) {
@@ -127,10 +137,25 @@ function Spot(i, j) {
   this.neighbours = [];
   this.cameFrom = undefined;
   this.wall = false;
+  this.penalty = 0;
 
   this.show = function(color) {
     fill(color);
     noStroke(0);
+
+    switch (this.penalty) {
+      case 1:
+        fill(107, 255, 91);
+        break;
+      case 2:
+        fill(91, 241, 255);
+        break;
+      case 3:
+        fill(255, 91, 91);
+        break;
+      default:
+        break;
+    }
 
     if (this.wall) {
       fill(0);
@@ -138,6 +163,7 @@ function Spot(i, j) {
 
     rect(this.i * w, this.j * h, w - 1, h - 1);
   };
+
   this.addNeighbours = function(grid) {
     var i = this.i;
     var j = this.j;
@@ -220,7 +246,7 @@ function setup() {
   }
 
   initWalls();
-
+  initPenalties();
   start = grid[0][0];
   end = grid[0][0];
   path = [];
@@ -260,7 +286,8 @@ function draw() {
         var neighbour = neighbours[i];
 
         if (!closedSet.includes(neighbour) && !neighbour.wall) {
-          var tempG = current.g + heuristic(neighbour, current);
+          var tempG =
+            current.g + heuristic(neighbour, current) + neighbour.penalty;
 
           var newPath = false;
           if (openSet.includes(neighbour)) {
@@ -296,7 +323,8 @@ function draw() {
       path.push(temp.cameFrom);
       temp = temp.cameFrom;
     }
-    // console.log(path);
+
+    console.log(path);
   }
 
   for (var i = 0; i < cols; i++) {
@@ -317,6 +345,7 @@ function draw() {
 
   if (creatingMoveList) {
     clearCameFrom();
+    // Tworzenie sciezki w formie listy ruchow wraz z obrotami w miejscu
     if (temp_i !== path[path.length - 1].i) {
       if (temp_i > path[path.length - 1].i) {
         if (Forklift.direction !== "w") {
@@ -380,16 +409,13 @@ function draw() {
       temp_j = path[path.length - 1].j;
     }
 
-    // if (x % 20 === 0) {
     path.pop();
-    // }
+
     if (path.length === 0) {
       console.log("Postion of fork at the end", Forklift.i, Forklift.j);
       creatingMoveList = false;
       animateMove = true;
       console.log(forkliftMoveList);
-
-      // clearFGH()
     }
     end.show(color(255, 0, 0));
   }
@@ -403,6 +429,7 @@ function draw() {
         forkliftMoveList.splice(0, 1);
       }
     } else {
+      clearFGH();
       animateMove = false;
     }
   }

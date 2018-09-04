@@ -305,8 +305,6 @@ function draw() {
     }
   }
 
-  Forklift.show(color(44, 82, 142));
-
   {
     // end.show(color(255,0,0))
     //   for (var i = 0; i < closedSet.length; i++) {
@@ -321,10 +319,30 @@ function draw() {
     clearCameFrom();
     if (temp_i !== path[path.length - 1].i) {
       if (temp_i > path[path.length - 1].i) {
+        if (Forklift.direction !== "w") {
+          forkliftMoveList.push(turn);
+
+          if (Forklift.direction === "n" || Forklift.direction === "s") {
+          } else {
+            forkliftMoveList.push(turn);
+          }
+          Forklift.direction = "w";
+        }
+
         forkliftMoveList.push(moveLeft);
       }
 
       if (temp_i < path[path.length - 1].i) {
+        if (Forklift.direction !== "e") {
+          forkliftMoveList.push(turn);
+
+          if (Forklift.direction === "n" || Forklift.direction === "s") {
+          } else {
+            forkliftMoveList.push(turn);
+          }
+          Forklift.direction = "e";
+        }
+
         forkliftMoveList.push(moveRight);
       }
       temp_i = path[path.length - 1].i;
@@ -332,10 +350,30 @@ function draw() {
 
     if (temp_j !== path[path.length - 1].j) {
       if (temp_j > path[path.length - 1].j) {
+        if (Forklift.direction !== "n") {
+          forkliftMoveList.push(turn);
+
+          if (Forklift.direction === "w" || Forklift.direction === "e") {
+          } else {
+            forkliftMoveList.push(turn);
+          }
+          Forklift.direction = "n";
+        }
+
         forkliftMoveList.push(moveUp);
       }
 
       if (temp_j < path[path.length - 1].j) {
+        if (Forklift.direction !== "s") {
+          forkliftMoveList.push(turn);
+
+          if (Forklift.direction === "w" || Forklift.direction === "e") {
+          } else {
+            forkliftMoveList.push(turn);
+          }
+          Forklift.direction = "s";
+        }
+
         forkliftMoveList.push(moveDown);
       }
 
@@ -355,6 +393,8 @@ function draw() {
     }
     end.show(color(255, 0, 0));
   }
+
+  Forklift.show(color(44, 82, 142));
 
   if (animateMove) {
     if (forkliftMoveList.length > 0) {

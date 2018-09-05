@@ -1,3 +1,57 @@
+// Obsluga pllikow
+let mobilenet, files, fileBlob;
+
+// mobilenet = ml5.imageClassifier("MobileNet", modelLoaded);
+
+function modelLoaded() {
+  console.log("Model Loaded!");
+}
+
+function handleFileSelect(evt) {
+  files = evt.target.files; // FileList object
+
+  // Loop through the FileList and render image files as thumbnails.
+  for (var i = 0, f; (f = files[i]); i++) {
+    // Only process image files.
+    if (!f.type.match("image.*")) {
+      continue;
+    }
+
+    var reader = new FileReader();
+
+    // Closure to capture the file information.
+    reader.onload = (function(theFile) {
+      return function(e) {
+        // if (e.target.result) {
+        //   fileBlob = URL.createObjectURL(e.target.result);
+        //   // URL.createObjectURL(blob)
+        //   mobilenet.predict(fileBlob, function(err, results) {
+        //     console.log(results);
+        //   });
+        // }
+        // Render thumbnail.
+        var span = document.createElement("span");
+        span.innerHTML = [
+          '<img class="thumb" src="',
+          e.target.result,
+          '" title="',
+          escape(theFile.name),
+          '"/>'
+        ].join("");
+        document.getElementById("list").insertBefore(span, null);
+      };
+    })(f);
+
+    // Read in the image file as a data URL.
+    reader.readAsDataURL(f);
+    var result = URL.createObjectURL(f);
+    console.log(result);
+  }
+}
+
+document
+  .getElementById("files")
+  .addEventListener("change", handleFileSelect, false);
 // Siec semantyczna
 var magazineNetwork = new Semnet();
 
@@ -19,7 +73,7 @@ magazineNetwork.fact("TV", "is", "big");
 magazineNetwork.fact("Containers", "is", "big");
 magazineNetwork.fact("Furniture", "is", "big");
 magazineNetwork.fact("Clothes", "is", "medium");
-magazineNetwork.fact("TV", "is", "big");
+magazineNetwork.fact("PC parts", "is", "big");
 magazineNetwork.fact("Food", "is", "small");
 
 var smallObjects = magazineNetwork
@@ -98,6 +152,46 @@ function removeFromArray(array, item) {
 }
 
 // Pobieranie wartosci do kierowania wozkiem
+function detectOppositeDirection(Forklift, direction) {
+  if (
+    (Forklift.direction == "n" && direction == "s") ||
+    (Forklift.direction == "s" && direction == "n")
+  ) {
+    return true;
+  }
+
+  if (
+    (Forklift.direction == "e" && direction == "w") ||
+    (Forklift.direction == "w" && direction == "e")
+  ) {
+    return true;
+  }
+
+  if (Forklift.direction == "e") {
+    turn();
+    Forklift.direction = "s";
+    return false;
+  }
+
+  if (Forklift.direction == "w") {
+    turn();
+    Forklift.direction = "n";
+    return false;
+  }
+
+  if (Forklift.direction == "n") {
+    turn();
+    Forklift.direction = "e";
+    return false;
+  }
+
+  if (Forklift.direction == "s") {
+    turn();
+    Forklift.direction = "w";
+    return false;
+  }
+}
+
 function getValueEndX() {
   endXValue = this.value();
   console.log(endXValue);
@@ -427,7 +521,7 @@ function Spot(i, j) {
   //
   this.shelf = false;
   this.shelfName = null;
-  this.type = null; // zywnosc, agd,
+  this.type = null; // zywnosc, agd
   this.atribute = null; // lekki, sredni, ciezki
   this.entrance = null;
   this.objects = [];
@@ -441,12 +535,12 @@ function Spot(i, j) {
     noStroke(0);
 
     switch (this.penalty) {
-      // pole wagi 1, kolor zielony
+      // pole wagi 5, kolor zielony, odpowiednik jakiejs mazi
       case 5:
         fill(210, 255, 76);
         break;
 
-      // pole wagi 2, kolor niebieski
+      // pole wagi 10, kolor czarny, odpowiednik plamy oleju
       case 10:
         fill(50, 52, 56);
         break;
@@ -521,24 +615,26 @@ function clearCameFrom() {
 
 // Inicjalizacja aplikacji
 function setup() {
-  // Inputy do sterowania wozkiem
-  var endX = createInput("0");
-  endX.input(getValueEndX);
+  // // Inputy do sterowania wozkiem
 
-  var endY = createInput("0");
-  endY.input(getValueEndY);
+  // var endX = createInput("0");
+  // endX.input(getValueEndX);
+
+  // var endY = createInput("0");
+  // endY.input(getValueEndY);
 
   var shelfNameInput = createInput("Input shelfname");
   shelfNameInput.input(getShefName);
+  shelfNameInput.parent("shelfName");
 
   var launcher = createButton("Launch");
   launcher.mousePressed(() => aStar(endXValue, endYValue, shelfName));
-
-  // var playground = createCanvas(600, 600);
-  // playground.parent('playground')
+  launcher.parent("launcherButton");
 
   // Tworzenie swiata
-  createCanvas(600, 600);
+  // createCanvas(600, 600);
+  var playground = createCanvas(600, 600);
+  playground.parent("playground");
 
   // Szerokosc i wysokosc kazdego pola wyliczania na podstawie ilosc wierszy i kolumn
   w = width / cols;
@@ -783,15 +879,17 @@ function draw() {
     } else {
       clearFGH();
       if (shelfs[shelfName]) {
-        while (Forklift.direction !== shelfs[shelfName].entrance) {
-          console.log("Nizgodny kierunek wozka z wjazdem");
+        var isValidDirection = detectOppositeDirection(
+          Forklift,
+          shelfs[shelfName].entrance
+        );
+        if (!isValidDirection) {
+          console.log("Niezgodny kierunek wozka z wjazdem");
           console.log(Forklift.direction, shelfs[shelfName].entrance);
-
-          turn();
         }
-      }
 
-      animateMove = false;
+        animateMove = false;
+      }
     }
   }
   PickupSpot.show();

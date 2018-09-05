@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://unpkg.com/ml5@0.1.1/dist/ml5.min.js" type="text/javascript"></script>
   <script src="https://rawgit.com/asciimoo/semnet/master/semnet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/p5.js"></script>
   <script language="javascript" type="text/javascript" src="p5.dom.js"></script>
-  <script src="sketch.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -14,34 +14,29 @@
 <body>
   <div class="container">
     <div id="playground"></div>
-    <!-- <div class="menu">
+    <div class="menu">
       <h1 class="header">Inteligent forklift</h1>
       <div style="width: 100%;">
         <div class="heading">
-          <h2>Choose start point and end point</h2>
+          <h2>Choose which shelf you want to visit</h2>
         </div>
         <div class="inputs">
           <div class="start">
-            <h4>Start</h4>
-            <label for="startX">X
-              <input id="startX" type="text" value="0">
+            <h4>Command the forklift</h4>
+            <label for="shelfName">Shelf name
+              <div id="shelfName"></div>
             </label>
-            <label for="startY">Y
-              <input id="startY" type="text" value="0">
+            <label for="files">
+              Upload the picture
+              <input type="file" id="files" name="files[]" multiple />
+              <output id="list"></output>
             </label>
-          </div>
-          <div class="end">
-            <h4>End</h4>
-            <label for="endX">X
-              <input id="endX" type="text" value="0">
-            </label>
-            <label for="startY">Y
-              <input id="endY" type="text" value="0">
-            </label>
+            <div id="launcherButton"></div>
           </div>
         </div>
-      </div> -->
+      </div>
     </div>
   </div>
 </body>
+<script src="sketch.js"></script>
 </html>
